@@ -102,8 +102,62 @@ def replace_chars(match):
     char = match.group(0)
     return chars[char]
 
+def get_sentence_information(data_string):
+	#the list of feature to be returned
+	#4 features
+    data1_tokens = nltk.word_tokenize(data_string) #tokenise the string
+	split=['.','?']
+	lower_count = 0
+	upper_count = 0
+	current_sentence_count = 0
+	sentence_count = 0
+	punc =['.',',','?','!',';',':']
+	for token in data_tokens:
+		if token in split:
+			if current_sentence_count > 0:
+				sentence_count+=1
+			current_sentence_count = 0
+		elif token not in punc:
+			current_sentence_count+=1
+			if current_sentence_count == 1:
+				if token[0].isupper():
+					upper_count+=1
+				else
+					lower_count+=1
+			word_count+=1
+	to_return.append(sentence_count) #total no of sentences
+	to_return.append(float(word_count)/sentence_count) #average word count of sentences
+	to_return.append(float(upper_count)/sentence_count) # % of sentences with upper case starting
+	to_return.append(float(lower_count)/sentence_count) # % of sentences with lower case starting
+
+
+def get_lines_information(data_string):
+	#the list of features to be returned
+	#4 features
+	to_return = []
+	to_return.append(data_string.count("\n")) #count the number of line
+	line_data = data_string.split("\n")
+	punc =['.',',','?','!',';',':']
+	char_count = 0
+	word_count = 0
+	for i in xrange(len(line_data)):
+		if line_data[i] == "":
+			empty_count+=1
+		else:
+			char_count+=len(i)
+			tokensi = nltk.word_tokenize(i)
+			for j in tokensi:
+				if j not in punc:
+					word_count+=1
+	to_return.append(float(empty_count)/to_return[0]) #count the % of empty lines
+	to_return.append(float(char_count)/to_return[0]) #count the average no of characters in a line
+	to_return.append(float(word_count)/to_return[0]) #count the average no fo words in a line
+	return to_return
+
+
 def syntactic_features(data_string,no_of_characters):
-	#the list f features to be returned
+	#the list of features to be returned
+	#10 features
 	to_return = []
 	to_return.append(float(data_string.count("'"))/no_of_characters) #count of ' char
 	to_return.append(float(data_string.count(","))/no_of_characters) #count of , char
@@ -112,13 +166,23 @@ def syntactic_features(data_string,no_of_characters):
 	to_return.append(float(len(data_string.count('.')))/no_of_characters) #count of . char
 	to_return.append(float(len(data_string.count(';')))/no_of_characters) #count of ; char
 	to_return.append(float(len(data_string.count(':')))/no_of_characters) #count of : char
-	to_return.append(float(len(re.findall("?{2,}",data_string)))/no_of_characters) #counts of multiple times occuring ? char
-	data_string = re.sub("?{2,}"," ",data_string) #remove the multiple times occuring ? char
+	to_return.append(float(len(re.findall("\?{2,}",data_string)))/no_of_characters) #counts of multiple times occuring ? char
+	data_string = re.sub("\?{2,}"," ",data_string) #remove the multiple times occuring ? char
 	to_return.append(float(len(data_string.count('?')))/no_of_characters) #count of ? char
 	to_return.append(float(len(re.findall("!{2,}",data_string)))/no_of_characters) #counts of multiple times occuring ! char
 	data_string = re.sub("!{2,}"," ",data_string) #remove the multiple times occuring ! char
 	to_return.append(float(len(data_string.count('!')))/no_of_characters) #count of ! char
+	return to_return
 
+def structural_features(data_string):
+	#the list of features to be returned
+	#currently 8 features
+	#TODO do for paragraphs....
+	#TODO greeting and farewell words
+	to_return = []
+	to_return.extend(get_lines_information(data_string))
+	to_return.extend(get_sentence_information(data_string))
+	return to_return
 
 
 def extract_features(filename):
@@ -128,8 +192,7 @@ def extract_features(filename):
     data1 = re.sub('(' + '|'.join(chars.keys()) + ')', replace_chars, data1) #remove the buffy encodings.. see the big list :P
     #the feature vector
     feature = []
-    #extend the 
+    #extend the feature vector with syntactic features
     feature.extend(syntactic_features(data1))
-    feature.extend()
-
-
+    #extend the feature vector with structural features
+    feature.extend(structural_features(data1_tokens))
