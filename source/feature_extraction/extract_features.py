@@ -109,7 +109,7 @@ def get_sentence_information(data_string):
 	split=['.','?']
 	lower_count = 0
 	upper_count = 0
-	current_sentence_count = 0
+	current_sentence_count = 0 
 	sentence_count = 0
 	punc =['.',',','?','!',';',':']
 	for token in data_tokens:
@@ -184,6 +184,29 @@ def structural_features(data_string):
 	to_return.extend(get_sentence_information(data_string))
 	return to_return
 
+def word_based_features(data_string):
+	#the list of features to be returned
+	#currently features
+	punctuations = ['.',',','?','!',';',':']
+	to_return = []
+	data_tokens = nltk.word_tokenize(data_string) #tokenise the string
+	data_tokens = [i for i in data_tokens if i not in punctuations and i != '']
+	data_tokens_len = [float(len(i)) for i in data_tokens] #get tokens length
+	data_tokens_larger_6 = [i for i in data1_tokens if len(i)>6] #get tokens of length > 6
+	data_tokens_small = [i for i in data1_tokens if len(i) < 4] #get tokens of length < 4
+	data_count = Counter(data_tokens)
+	data_count_dict = dict(data_count) #get count of each token
+	hapaxs = [i for i in data_count_dict.keys() if data_count_dict[i] == 1] #get the hapax words... for info see https://en.wikipedia.org/wiki/Hapax_legomenon
+	di_hapaxs = [i for i in data_count_dict.keys() if data_count_dict[i] == 2]
+	to_return.append(len(data_tokens)) #no of words
+	to_return.append(sum(data_tokens_len)/float(len(data_tokens_len))) #average length of words
+	to_return.append(float(len(set(data_tokens)))/float(len(data_tokens))) #no of distinct words, vocabulary strength
+	to_return.append(float(len(data_tokens_larger_6))/float(len(data_tokens))) #no of words with length > 6
+	to_return.append(float(len(data_tokens_small))/float(len(data_tokens))) #no of words with length < 4
+	to_return.append(float(len(hapaxs))/float(len(data_tokens))) #hapax legomena
+	to_return.append(float(len(di_hapaxs))/float(len(data_tokens))) #hapax dislegomena
+	return to_return
+
 
 def extract_features(filename):
 	#rading data from the file
@@ -195,4 +218,6 @@ def extract_features(filename):
     #extend the feature vector with syntactic features
     feature.extend(syntactic_features(data1))
     #extend the feature vector with structural features
-    feature.extend(structural_features(data1_tokens))
+    feature.extend(structural_features(data1))
+    #extend the feature vector with function words
+    feature.extend(word_based_features(data1))
