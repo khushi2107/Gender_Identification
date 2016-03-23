@@ -221,3 +221,22 @@ def extract_features(filename):
     feature.extend(structural_features(data1))
     #extend the feature vector with function words
     feature.extend(word_based_features(data1))
+
+
+# character based features
+def character_features(data_string):
+    no_of_characters = len(data_string)
+    no_of_letters += sum(c.isalpha() and c.islower() for c in data_string)
+    no_of_digits += sum(c.isdigit() for c in data_string)
+    no_of_upper_characters += sum(c.isupper() for c in data_string)
+    no_of_whitespace_characters += sum(c.isspace() for c in data_string)
+    no_of_tabspace_characters += data_string.count('\t')
+    # get the count of digital characters
+    no_of_all_characters = (no_of_digits + no_of_letters + no_of_whitespace_characters + no_of_tabspace_characters)
+    no_of_special_characters = no_of_characters - no_of_all_characters
+    no_of_letters = float(no_of_letters) / float(no_of_characters)
+    no_of_digits = float(no_of_digits) / float(no_of_characters)
+    no_of_upper_characters = float(no_of_upper_characters) / float(no_of_characters)
+    no_of_whitespace_characters = float(no_of_whitespace_characters) / float(no_of_characters)
+    no_of_tabspace_characters = float(no_of_tabspace_characters) / float(no_of_characters)
+    no_of_special_characters = float(no_of_special_characters) / float(no_of_characters)
