@@ -6,10 +6,12 @@ import numpy as np
 import operator
 import pickle
 import sys
+import math
+import codecs
 reload(sys)
 sys.setdefaultencoding("utf-8")
-POS_dic = {"CC":1, "CD":2, "DT":3, "EX":4, "FW":5, "IN":, "JJ":7, "JJR":8, "JJS":9, "LS":10, "MD":11, "NN":12, "NNS":13, "NNP":14, "NNPS":15, "PDT":16, "POS":17,/
- "PRP":18, "PRP$":19, "RB":20, "RBR":21, "RBS":22, "RP":23, "SYM":24, "TO":25, "UH":26, "VB":27, "VBD":28, "VBG":29, "VBN":30, "VBP":31, "VBZ":32, "WDT":33, "WP":34, "WP$":35, "WRB":36}
+POS_dic = {"CC":1, "CD":2, "DT":3, "EX":4, "FW":5, "IN":6, "JJ":7, "JJR":8, "JJS":9, "LS":10, "MD":11, "NN":12, "NNS":13, "NNP":14, "NNPS":15, "PDT":16, "POS":17,\
+"PRP":18, "PRP$":19, "RB":20, "RBR":21, "RBS":22, "RP":23, "SYM":24, "TO":25, "UH":26, "VB":27, "VBD":28, "VBG":29, "VBN":30, "VBP":31, "VBZ":32, "WDT":33, "WP":34, "WP$":35, "WRB":36}
 
 #handling of the unwanted unicodes
 chars = {
@@ -105,14 +107,19 @@ def replace_chars(match):
 def get_sentence_information(data_string):
 	#the list of feature to be returned
 	#4 features
-    data1_tokens = nltk.word_tokenize(data_string) #tokenise the string
-	split=['.','?']
+	data_string = re.sub("!{2,}","!",data_string)
+	data_string = re.sub("\.{2,}",".",data_string)
+	data_string = re.sub("\?{2,}","?",data_string)
+	data1_tokens = nltk.word_tokenize(data_string) #tokenise the string
+	to_return = []
+	split=['.','?', '!']
 	lower_count = 0
 	upper_count = 0
 	current_sentence_count = 0 
 	sentence_count = 0
+	word_count = 0
 	punc =['.',',','?','!',';',':']
-	for token in data_tokens:
+	for token in data1_tokens:
 		if token in split:
 			if current_sentence_count > 0:
 				sentence_count+=1
@@ -122,13 +129,16 @@ def get_sentence_information(data_string):
 			if current_sentence_count == 1:
 				if token[0].isupper():
 					upper_count+=1
-				else
+				else:
 					lower_count+=1
 			word_count+=1
+	if sentence_count == 0:
+		sentence_count = 1
 	to_return.append(sentence_count) #total no of sentences
 	to_return.append(float(word_count)/sentence_count) #average word count of sentences
 	to_return.append(float(upper_count)/sentence_count) # % of sentences with upper case starting
 	to_return.append(float(lower_count)/sentence_count) # % of sentences with lower case starting
+	return to_return
 
 
 def get_lines_information(data_string):
@@ -140,12 +150,13 @@ def get_lines_information(data_string):
 	punc =['.',',','?','!',';',':']
 	char_count = 0
 	word_count = 0
+	empty_count = 0
 	for i in xrange(len(line_data)):
 		if line_data[i] == "":
 			empty_count+=1
 		else:
-			char_count+=len(i)
-			tokensi = nltk.word_tokenize(i)
+			char_count+=len(line_data[i])
+			tokensi = nltk.word_tokenize(line_data[i])
 			for j in tokensi:
 				if j not in punc:
 					word_count+=1
@@ -154,6 +165,48 @@ def get_lines_information(data_string):
 	to_return.append(float(word_count)/to_return[0]) #count the average no fo words in a line
 	return to_return
 
+def calculate_yule_k(data_word_count,no_of_words):
+	to_return = 0
+	to_return = to_return + 10000.0/float(no_of_words)
+	for word_count in data_word_count.keys():
+		to_return = to_return + float(10000.0*(float(len(data_word_count[word_count]))*(float(word_count/no_of_words))**2))
+	return to_return
+
+def calculate_simpson_d_measure(data_word_count, no_of_words):
+	to_return = 0
+	for word_count in data_word_count.keys():
+		to_return = to_return + float(len(data_word_count[word_count])*float(word_count)*float(word_count-1)/float(no_of_words*(no_of_words-1)))
+	return to_return
+
+def calculate_sichel_s_measure(di_hapaxs,word_set_len):
+	to_return = 0
+	to_return = to_return + float(float(len(di_hapaxs))/word_set_len)
+	return to_return
+
+def calculate_honore_r_measure(hapaxs,word_set_len,no_of_words):
+	to_return = 0
+	to_return = to_return + float(100*math.log10(no_of_words))
+	to_return = to_return/float(1-float(len(hapaxs))/word_set_len)
+	return to_return
+
+def calculate_entropy_measure(data_word_count,no_of_words):
+	to_return = 0
+	for word_count in data_word_count.keys():
+		to_return = to_return + float(len(data_word_count[word_count])*math.log10(float(no_of_words)/word_count)*float(word_count)/no_of_words)
+	return to_return
+
+def character_features(data_string):
+	#the list to be returned
+	#7 features
+	to_return = []
+	to_return.append(len(data_string)) #total no of characters
+	to_return.append(float(sum(c.isalpha() and c.islower() for c in data_string))/to_return[0]) # total no of letters
+	to_return.append(float(sum(c.isdigit() for c in data_string))/to_return[0]) # total no of digital characters
+	to_return.append(float(sum(c.isupper() for c in data_string))/to_return[0]) #total no of upper case characters
+	to_return.append(float(sum(c.isspace() for c in data_string))/to_return[0]) #total no of whitespace characters
+	to_return.append(float(data_string.count('\t'))/to_return[0]) # total no of tab space characters
+	to_return.append(float(1-to_return[1]-to_return[2]-to_return[3]-to_return[4]-to_return[5])) # total no of special characters
+	return to_return
 
 def syntactic_features(data_string,no_of_characters):
 	#the list of features to be returned
@@ -163,15 +216,15 @@ def syntactic_features(data_string,no_of_characters):
 	to_return.append(float(data_string.count(","))/no_of_characters) #count of , char
 	to_return.append(float(len(re.findall("\.{2,}",data_string)))/no_of_characters) #counts of multiple times occuring . char
 	data_string = re.sub("\.{2,}"," ",data_string) #remove the multiple times occuring . char
-	to_return.append(float(len(data_string.count('.')))/no_of_characters) #count of . char
-	to_return.append(float(len(data_string.count(';')))/no_of_characters) #count of ; char
-	to_return.append(float(len(data_string.count(':')))/no_of_characters) #count of : char
+	to_return.append(float(data_string.count('.'))/no_of_characters) #count of . char
+	to_return.append(float(data_string.count(';'))/no_of_characters) #count of ; char
+	to_return.append(float(data_string.count(':'))/no_of_characters) #count of : char
 	to_return.append(float(len(re.findall("\?{2,}",data_string)))/no_of_characters) #counts of multiple times occuring ? char
 	data_string = re.sub("\?{2,}"," ",data_string) #remove the multiple times occuring ? char
-	to_return.append(float(len(data_string.count('?')))/no_of_characters) #count of ? char
+	to_return.append(float(data_string.count('?'))/no_of_characters) #count of ? char
 	to_return.append(float(len(re.findall("!{2,}",data_string)))/no_of_characters) #counts of multiple times occuring ! char
 	data_string = re.sub("!{2,}"," ",data_string) #remove the multiple times occuring ! char
-	to_return.append(float(len(data_string.count('!')))/no_of_characters) #count of ! char
+	to_return.append(float(data_string.count('!'))/no_of_characters) #count of ! char
 	return to_return
 
 def structural_features(data_string):
@@ -187,15 +240,24 @@ def structural_features(data_string):
 def word_based_features(data_string):
 	#the list of features to be returned
 	#currently features
+	#TODO not complete yet..
 	punctuations = ['.',',','?','!',';',':']
 	to_return = []
-	data_tokens = nltk.word_tokenize(data_string) #tokenise the string
+	data_tokens = nltk.word_tokenize(data_string.lower()) #tokenise the string
 	data_tokens = [i for i in data_tokens if i not in punctuations and i != '']
+	data_tokens_set = set(data_tokens)
 	data_tokens_len = [float(len(i)) for i in data_tokens] #get tokens length
-	data_tokens_larger_6 = [i for i in data1_tokens if len(i)>6] #get tokens of length > 6
-	data_tokens_small = [i for i in data1_tokens if len(i) < 4] #get tokens of length < 4
+	data_tokens_larger_6 = [i for i in data_tokens if len(i)>6] #get tokens of length > 6
+	data_tokens_small = [i for i in data_tokens if len(i) < 4] #get tokens of length < 4
 	data_count = Counter(data_tokens)
 	data_count_dict = dict(data_count) #get count of each token
+	data_word_count = {}
+	for i in data_count_dict.keys():
+		try:
+			data_word_count[data_count_dict[i]].append(i)
+		except KeyError:
+			data_word_count[data_count_dict[i]] = []
+			data_word_count[data_count_dict[i]].append(i)
 	hapaxs = [i for i in data_count_dict.keys() if data_count_dict[i] == 1] #get the hapax words... for info see https://en.wikipedia.org/wiki/Hapax_legomenon
 	di_hapaxs = [i for i in data_count_dict.keys() if data_count_dict[i] == 2]
 	to_return.append(len(data_tokens)) #no of words
@@ -205,38 +267,37 @@ def word_based_features(data_string):
 	to_return.append(float(len(data_tokens_small))/float(len(data_tokens))) #no of words with length < 4
 	to_return.append(float(len(hapaxs))/float(len(data_tokens))) #hapax legomena
 	to_return.append(float(len(di_hapaxs))/float(len(data_tokens))) #hapax dislegomena
+	to_return.append(calculate_yule_k(data_word_count,len(data_tokens))) #yule's k measure
+	to_return.append(calculate_simpson_d_measure(data_word_count,len(data_tokens))) #simpsons d measure
+	to_return.append(calculate_sichel_s_measure(di_hapaxs,len(data_tokens_set))) #sichels s measure
+	to_return.append(calculate_honore_r_measure(hapaxs,len(data_tokens_set),len(data_tokens))) #honores r measure
+	to_return.append(calculate_entropy_measure(data_word_count,len(data_tokens))) #calculate the entropy measure
 	return to_return
 
 
 def extract_features(filename):
 	#rading data from the file
-	with open (filename, "r") as myfile1:
-        data1 = myfile1.read()
-    data1 = re.sub('(' + '|'.join(chars.keys()) + ')', replace_chars, data1) #remove the buffy encodings.. see the big list :P
-    #the feature vector
-    feature = []
-    #extend the feature vector with syntactic features
-    feature.extend(syntactic_features(data1))
-    #extend the feature vector with structural features
-    feature.extend(structural_features(data1))
-    #extend the feature vector with function words
-    feature.extend(word_based_features(data1))
+	with codecs.open(filename, "r",encoding='utf-8', errors='ignore') as fdata:
+		data1 = fdata.read()
+	#data1 = data1.decode('cp1250')
+	data1 = data1.encode('utf-8',errors='ignore') 
+	data1 = re.sub('(' + '|'.join(chars.keys()) + ')', replace_chars, data1) #remove the buggy encodings.. see the big list :P
+	data1 = data1.replace("\0x93",'"')
+	data1 = data1.replace("\0x94",'"')
+	data1 = data1.decode('utf-8')
+	#the feature vector
+	feature = []
+	feature.extend(character_features(data1)) #extend the feature vector with character features
+	feature.extend(syntactic_features(data1,feature[0])) #extend the feature vector with syntactic features
+	feature.extend(structural_features(data1)) #extend the feature vector with structural features
+	feature.extend(word_based_features(data1)) #extend the feature vector with word based features
+	return feature
 
-
-# character based features
-def character_features(data_string):
-    no_of_characters = len(data_string)
-    no_of_letters += sum(c.isalpha() and c.islower() for c in data_string)
-    no_of_digits += sum(c.isdigit() for c in data_string)
-    no_of_upper_characters += sum(c.isupper() for c in data_string)
-    no_of_whitespace_characters += sum(c.isspace() for c in data_string)
-    no_of_tabspace_characters += data_string.count('\t')
-    # get the count of digital characters
-    no_of_all_characters = (no_of_digits + no_of_letters + no_of_whitespace_characters + no_of_tabspace_characters)
-    no_of_special_characters = no_of_characters - no_of_all_characters
-    no_of_letters = float(no_of_letters) / float(no_of_characters)
-    no_of_digits = float(no_of_digits) / float(no_of_characters)
-    no_of_upper_characters = float(no_of_upper_characters) / float(no_of_characters)
-    no_of_whitespace_characters = float(no_of_whitespace_characters) / float(no_of_characters)
-    no_of_tabspace_characters = float(no_of_tabspace_characters) / float(no_of_characters)
-    no_of_special_characters = float(no_of_special_characters) / float(no_of_characters)
+if __name__=="__main__":
+	feature_file = open("features.txt", "wb")
+	for i in range(1,19321):
+		features = extract_features("../../../IRE/ExtractedBlogFiles/" + str(i) + "_blogFile")
+		for j in range(0,len(features)-1):
+			feature_file.write(str(features[j])+",")
+		feature_file.write(str(features[-1]) + "\n")
+	feature_file.close()
