@@ -225,18 +225,12 @@ def extract_features(filename):
 
 # character based features
 def character_features(data_string):
-    no_of_characters = len(data_string)
-    no_of_letters += sum(c.isalpha() and c.islower() for c in data_string)
-    no_of_digits += sum(c.isdigit() for c in data_string)
-    no_of_upper_characters += sum(c.isupper() for c in data_string)
-    no_of_whitespace_characters += sum(c.isspace() for c in data_string)
-    no_of_tabspace_characters += data_string.count('\t')
-    # get the count of digital characters
-    no_of_all_characters = (no_of_digits + no_of_letters + no_of_whitespace_characters + no_of_tabspace_characters)
-    no_of_special_characters = no_of_characters - no_of_all_characters
-    no_of_letters = float(no_of_letters) / float(no_of_characters)
-    no_of_digits = float(no_of_digits) / float(no_of_characters)
-    no_of_upper_characters = float(no_of_upper_characters) / float(no_of_characters)
-    no_of_whitespace_characters = float(no_of_whitespace_characters) / float(no_of_characters)
-    no_of_tabspace_characters = float(no_of_tabspace_characters) / float(no_of_characters)
-    no_of_special_characters = float(no_of_special_characters) / float(no_of_characters)
+	to_return = []
+    to_return.append(len(data_string)) #total no of characters
+    to_return.append(float(sum(c.isalpha() and c.islower() for c in data_string))/to_return[0]) # total no of letters
+    to_return.append(float(sum(c.isdigit() for c in data_string))/to_return[0]) # total no of digital characters
+    to_return.append(float(sum(c.isupper() for c in data_string))/to_return[0]) #total no of upper case characters
+    to_return.append(float(sum(c.isspace() for c in data_string))/to_return[0]) #total no of whitespace characters
+    to_return.append(float(data_string.count('\t'))/to_return[0]) # total no of tab space characters
+    to_return.append(float(1-to_return[1]-to_return[2]-to_return[3]-to_return[4]-to_return[5])) # total no of special characters
+    return to_return
