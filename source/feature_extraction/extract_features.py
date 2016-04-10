@@ -272,8 +272,36 @@ def word_based_features(data_string):
 	to_return.append(calculate_sichel_s_measure(di_hapaxs,len(data_tokens_set))) #sichels s measure
 	to_return.append(calculate_honore_r_measure(hapaxs,len(data_tokens_set),len(data_tokens))) #honores r measure
 	to_return.append(calculate_entropy_measure(data_word_count,len(data_tokens))) #calculate the entropy measure
-	return to_return
+	return to_return	
 
+''' Fucntion words extraction '''
+def function_words_features(data_string):
+	# Tokenize the blog
+	tokened_data_string = word_tokenize(data_string)
+	# Get the count of words
+	total_words = len(tokened_data_string)
+	to_return = []
+	# Tag the text
+	postagtext = nltk.pos_tag(tokened_data_string)
+	# Article words
+	to_return.append(float(str(postagtext).count('DT'))/float(total_words))
+	# Prosentense words
+	to_return.append(float((data_string.lower().count('yes') + data_string.lower().count('no') + data_string.lower().count('okay') + data_string.lower().count('ok')))/float(total_words))
+	# Pronoun words
+	total_pronouns = str(postagtext).count('PP') + str(postagtext).count('PP$') + str(postagtext).count('WP') + str(postagtext).count('WP$')
+	to_return.append(float(total_pronouns)/float((total_words))
+	# Auxilary Verbs
+	to_return.append(float((str(postagtext).count('VB') + str(postagtext).count('VBD') + str(postagtext).count('VBG') \
+					 str(postagtext).count('VBN') + str(postagtext).count('VBP') + str(postagtext).count('VBZ'))) / float(total_words))
+	# Conjunction words
+	to_return.append(float(str(postagtext).count('CC'))/float(total_words))
+	# interjection words
+	to_return.append(float(str(postagtext).count('UH'))/float(total_words))
+	# adposition words
+	to_return.append(float(str(postagtext).count('IN'))/float(total_words))
+	# gender-specific words
+
+	return to_return
 
 def extract_features(filename):
 	#rading data from the file
