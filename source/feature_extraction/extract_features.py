@@ -13,6 +13,25 @@ sys.setdefaultencoding("utf-8")
 POS_dic = {"CC":1, "CD":2, "DT":3, "EX":4, "FW":5, "IN":6, "JJ":7, "JJR":8, "JJS":9, "LS":10, "MD":11, "NN":12, "NNS":13, "NNP":14, "NNPS":15, "PDT":16, "POS":17,\
 "PRP":18, "PRP$":19, "RB":20, "RBR":21, "RBS":22, "RP":23, "SYM":24, "TO":25, "UH":26, "VB":27, "VBD":28, "VBG":29, "VBN":30, "VBP":31, "VBZ":32, "WDT":33, "WP":34, "WP$":35, "WRB":36}
 
+gender_set = ("actor","actress","administrator","administratrix","author","authoress","bachelor",\
+			"spinster","boy","girl","BoyScout","GirlGuide","brave","squaw","bridegroom","bride","brother",\
+			"sister","conuctor","conductress","count","countess","czar","czarina","dad","mum","daddy",\
+			"mummy","duke","duchess","emperor","empress","father","mother","father-in-aw","mother-in-law",\
+			"fiance","fiancee","gentleman","lady","giant","giantess","god","goddess","governor","matron",\
+			"grandfather","grandmother","grandson","granddaughter","headmaster","headmistess","heir",\
+			"heiress","hero","heroine","host","hostess","hunter","huntress","husband","wife","king",\
+			"queen","lad","lass","landlord","landlady","lord","lady","male","female","man","woman",\
+			"maager","manageress","manservant","maidservant","masseur","masseuse","master","mistress",\
+			"mayor","mayoress","milkman","milkmaid","millionaire","millionairess","monitor","monitress",\
+			"monk","nun""Mr.","Mrs.","murderer","murderess","Negro","Negress","nephew","niece","papa",\
+			"mama","poet","potess","policeman","policewoman","postman","postwoman","postmaster",\
+			"postmistress","priest","prietess","prince","princess","prophet","prophetess","proprietor",\
+			"proprietress","prosecutor","proecutrix","protector","protectress","shepherd","shepherdess",\
+			"sir","madam","son","daughter","sonin-law","daughter-in-law","step-father","step-mother",\
+			"step-son","step-daughter","steward","stewardess","sultan","sultana","tailor","tailoress",\
+			"testator","testatrix","uncle","aunt","usher","usherette","waiter","waitress","washerman",\
+			"washerwoman","widower","widow","wizard","witch")
+
 #handling of the unwanted unicodes
 chars = {
     '\xc2\x82' : ',',        # High code comma
@@ -277,7 +296,7 @@ def word_based_features(data_string):
 ''' Fucntion words extraction '''
 def function_words_features(data_string):
 	# Tokenize the blog
-	tokened_data_string = word_tokenize(data_string)
+	tokened_data_string = nltk.word_tokenize(data_string)
 	# Get the count of words
 	total_words = len(tokened_data_string)
 	to_return = []
@@ -289,10 +308,9 @@ def function_words_features(data_string):
 	to_return.append(float((data_string.lower().count('yes') + data_string.lower().count('no') + data_string.lower().count('okay') + data_string.lower().count('ok')))/float(total_words))
 	# Pronoun words
 	total_pronouns = str(postagtext).count('PP') + str(postagtext).count('PP$') + str(postagtext).count('WP') + str(postagtext).count('WP$')
-	to_return.append(float(total_pronouns)/float((total_words))
+	to_return.append(float(total_pronouns)/float((total_words)))
 	# Auxilary Verbs
-	to_return.append(float((str(postagtext).count('VB') + str(postagtext).count('VBD') + str(postagtext).count('VBG') \
-					 str(postagtext).count('VBN') + str(postagtext).count('VBP') + str(postagtext).count('VBZ'))) / float(total_words))
+	to_return.append(float((str(postagtext).count('VB') + str(postagtext).count('VBD') + str(postagtext).count('VBG') + str(postagtext).count('VBN') + str(postagtext).count('VBP') + str(postagtext).count('VBZ'))) / float(total_words))
 	# Conjunction words
 	to_return.append(float(str(postagtext).count('CC'))/float(total_words))
 	# interjection words
@@ -300,7 +318,11 @@ def function_words_features(data_string):
 	# adposition words
 	to_return.append(float(str(postagtext).count('IN'))/float(total_words))
 	# gender-specific words
-
+	count=0
+	for word in tokened_data_string:
+		if word in gender_set:
+			count+=1;
+	to_return.append(float(count)/float(total_words))
 	return to_return
 
 def extract_features(filename):
