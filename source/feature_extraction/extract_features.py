@@ -13,6 +13,7 @@ sys.setdefaultencoding("utf-8")
 POS_dic = {"CC":1, "CD":2, "DT":3, "EX":4, "FW":5, "IN":6, "JJ":7, "JJR":8, "JJS":9, "LS":10, "MD":11, "NN":12, "NNS":13, "NNP":14, "NNPS":15, "PDT":16, "POS":17,\
 "PRP":18, "PRP$":19, "RB":20, "RBR":21, "RBS":22, "RP":23, "SYM":24, "TO":25, "UH":26, "VB":27, "VBD":28, "VBG":29, "VBN":30, "VBP":31, "VBZ":32, "WDT":33, "WP":34, "WP$":35, "WRB":36}
 
+#set for gender specific words
 gender_set = ("actor","actress","administrator","administratrix","author","authoress","bachelor",\
 			"spinster","boy","girl","BoyScout","GirlGuide","brave","squaw","bridegroom","bride","brother",\
 			"sister","conuctor","conductress","count","countess","czar","czarina","dad","mum","daddy",\
@@ -31,6 +32,7 @@ gender_set = ("actor","actress","administrator","administratrix","author","autho
 			"step-son","step-daughter","steward","stewardess","sultan","sultana","tailor","tailoress",\
 			"testator","testatrix","uncle","aunt","usher","usherette","waiter","waitress","washerman",\
 			"washerwoman","widower","widow","wizard","witch")
+
 
 #handling of the unwanted unicodes
 chars = {
@@ -248,9 +250,7 @@ def syntactic_features(data_string,no_of_characters):
 
 def structural_features(data_string):
 	#the list of features to be returned
-	#currently 8 features
-	#TODO do for paragraphs....
-	#TODO greeting and farewell words
+	#8 features
 	to_return = []
 	to_return.extend(get_lines_information(data_string))
 	to_return.extend(get_sentence_information(data_string))
@@ -258,10 +258,10 @@ def structural_features(data_string):
 
 def word_based_features(data_string):
 	#the list of features to be returned
-	#currently features
-	#TODO not complete yet..
+	#currently 32 features
 	punctuations = ['.',',','?','!',';',':']
 	to_return = []
+	word_len_count = [0]*20
 	data_tokens = nltk.word_tokenize(data_string.lower()) #tokenise the string
 	data_tokens = [i for i in data_tokens if i not in punctuations and i != '']
 	data_tokens_set = set(data_tokens)
@@ -291,11 +291,19 @@ def word_based_features(data_string):
 	to_return.append(calculate_sichel_s_measure(di_hapaxs,len(data_tokens_set))) #sichels s measure
 	to_return.append(calculate_honore_r_measure(hapaxs,len(data_tokens_set),len(data_tokens))) #honores r measure
 	to_return.append(calculate_entropy_measure(data_word_count,len(data_tokens))) #calculate the entropy measure
+	for i in data_tokens:
+		try:
+			word_len_count[len(i)]+=1
+		except:
+			pass
+	to_return.extend(word_len_count) #20 features
 	return to_return	
 
 ''' Fucntion words extraction '''
 def function_words_features(data_string):
+	# total 8 features
 	# Tokenize the blog
+	global gender_set
 	tokened_data_string = nltk.word_tokenize(data_string)
 	# Get the count of words
 	total_words = len(tokened_data_string)
@@ -325,6 +333,32 @@ def function_words_features(data_string):
 	to_return.append(float(count)/float(total_words))
 	return to_return
 
+def pos_tag_start(data_string):
+	#total 36 features
+	global POS_dic
+	to_return = [0]*36
+	tokened_data_string = nltk.word_tokenize(data_string)
+	postagtext = nltk.pos_tag(tokened_data_string)
+	punc =['.','?',';']
+	sen = []
+	sen_list1=[]
+	for i in postagtext:
+		if not i[0] in punc:
+			sen.append(i)
+		else:
+			sen_list1.append(sen)
+			sen=[]
+	while [] in sen_list1:
+		sen_list1.remove([])
+	for i in sen_list1:
+		try:
+			to_return[POS_dic[i[0]]]+=1
+		except KeyError:
+			pass
+	return to_return
+
+
+
 def extract_features(filename):
 	#rading data from the file
 	with codecs.open(filename, "r",encoding='utf-8', errors='ignore') as fdata:
@@ -341,6 +375,8 @@ def extract_features(filename):
 	feature.extend(syntactic_features(data1,feature[0])) #extend the feature vector with syntactic features
 	feature.extend(structural_features(data1)) #extend the feature vector with structural features
 	feature.extend(word_based_features(data1)) #extend the feature vector with word based features
+	feature.extend(function_words_features(data1)) #extend the feature vector with function word based features
+	feature.extend(pos_tag_start(data1)) #extend the feature vector with start pos frequencies
 	return feature
 
 if __name__=="__main__":
