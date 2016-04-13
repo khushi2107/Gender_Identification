@@ -40,10 +40,6 @@
 <li>Building up of an Ensemble model on the different classifiers.</li>
 </ol>
 
-<p>The basic flow is depicted below:</p>
-
-<p><img src="https://89a052b99dcfbc88d49e32647668f5c8a4450f91.googledrive.com/secure/ALrMiJhOdQn3hT5walqe-ob12cGUoJWnDS9BLTTWz1RyrIxQ7bSATP63cnk9Oyx4zT6vp_kILw_0Re9FEbvBle2CoW-23_OLvtMiaa6mZ_AWUaGuDr2tS3gwyGcCAbWzjMNIiHnFS58MQsoLQxbXVerVJtH47_hoBJqIfFMa4KHToJ6ndC_D19Xl9-f2IbdYJtocpe0P_nNJ59O3DXjOqvvLBZZ1vE4nJKHpcZanbAeuT0kBQPaXFdl7-sXGgkhEuRiLfPHYLm8-05nGmJRwkj_WvY1UKrO1T2avhzcpVASRqiO90Sv5C99J0rMowhzoSTGEnyu_CL_ESneE3SUK9TTS3hPBvVrGruYpVRP-CPO8GB94ZunR6sdRGI-f091UFOe8zgvxkOu4HLjWwlm0_LLpAknrPsy2POfPiRFeURuM51Zs6VkKvOwPQfe_QVmB-XfAblpmF-tBFOe1vM_7P-7pzc3cXdoI1qbd-P8-9w6LjCD8RZyIfjcZHW5mhcPKxElAit3mBqKK6JVnsgsXhHSG6-8NFEHDMGZibqOljeg29C-5-WcZBLMhOID3x7cLVx3QIDlg7mHO/host/0B5vS4GhT4N1bbDRsZEJvV1VEaEU/IRE_Project.png" alt="Workflow"></p>
-
 <h3>
 <a id="feature-extraction" class="anchor" href="#feature-extraction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Feature Extraction</h3>
 
@@ -58,6 +54,38 @@
 <li>POS Start Probability</li>
 </ul>
 
+<h3>
+<a id="classification" class="anchor" href="#classification" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Classification</h3>
+
+<p>The following set of classifiers are used for the task of classification:</p>
+
+<ul>
+<li>Random Forest Classifier - Scikit Learn Python</li>
+<li>Multilayer Perceptron Neural Networks Classifier - Scikit Learn Python</li>
+<li>Adaboost Tree Classifier - Scikit Learn Python</li>
+<li>Gradient Boosting Classifier - Scikit Learn Python</li>
+<li>Bagging Classifier - Scikit Learn Python</li>
+</ul>
+
+<h3>
+<a id="predicting-the-output" class="anchor" href="#predicting-the-output" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Predicting the output</h3>
+
+<p>For the prediction of output we have taken the Ensemble (ie the majority voting) from the Classifiers above.</p>
+
+<h2>
+<a id="results" class="anchor" href="#results" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Results</h2>
+
+<p>For now the tool works with an accuracy of around 73% for the Koppels Blog Dataset.</p>
+
+<h2>
+<a id="future-improvements" class="anchor" href="#future-improvements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Future Improvements</h2>
+
+<ul>
+<li>Addition of more features to the feature set such as synonyms etc.</li>
+<li>Usage of more advanced Classifiers in the Classification tasks such as Recurrent Neural Networks.</li>
+<li>Extending the tool for multiple Languages.</li>
+</ul>
+
 <h2>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h2>
 
@@ -66,7 +94,7 @@
 <h3>
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<p>Having trouble with Pages? Check out our <a href="https://help.github.com/pages">documentation</a> or <a href="https://github.com/contact">contact support</a> and we’ll help you sort it out.</p>
+<p>Having trouble with Pages? Check out our <a href="https://youtube.com/pages">video</a> or <a href="https://google.com">our presentation</a> or <a href="https://github.com/nitishjain2007/Gender_Identification/issues">raise an issue</a> and we’ll help you sort it out.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/nitishjain2007/Gender_Identification">Gender Detection On Blogs</a> is maintained by <a href="https://github.com/nitishjain2007">nitishjain2007</a>.</span>
