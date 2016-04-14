@@ -1,4 +1,4 @@
-# Gender_Identification
+# Gender Detection In Blogs
 A classifier systems for detection of the gender of author for the text written 
 
 #Usage
