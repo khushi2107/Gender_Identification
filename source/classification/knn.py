@@ -1,42 +1,41 @@
-import sys
-
-from sklearn.cross_validation import KFold as kfold
-from sklearn.neighbors import KNeighborsClassifier as knn
-
-#import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
+from sklearn import decomposition
+f = open("features_normalized.txt")
+data = []
+for line in f:
+	line = line.strip()
+	data1 = line.split(",")
+	data1 = [float(i) for i in data1]
+	data1 = np.array(data1)
+	data.append(data1)
+data = np.array(data)
+labels = []
+f.close()
+f = open("label")
+for line in f:
+	line = line.strip()
+	labels.append(line)
+f.close()
+pca = decomposition.PCA(n_components=90)
+pca.fit(data)
+data = pca.transform(data)
 
-
-if __name__== "__main__":
-	
-	#data = pd.read_csv(sys.argv[1],header=None)
-	#label = pd.read_csv(sys.argv[2],header=None)
-
-	data = np.loadtxt(sys.argv[1],delimiter =',')
-	label = np.loadtxt(sys.argv[2],delimiter=',')
-
-	length_of_data = len(data)
-
-	print "The accuracies for the different k :"
-	for i in range(1,30):
-		neigh = knn(n_neighbors = i)
-		#neigh = knn(n_neighbors = 12)
-	
-		kf = kfold(length_of_data, n_folds = 10)
-		total_count = 0
-
-		for train_index, test_index in kf:
-		
-			train_data, test_data = data[train_index], data[test_index]
-			train_label, test_label = label[train_index], label[test_index]
-			neigh.fit(train_data, train_label)
-
-			partition_count = 0
-			for index, value in enumerate(list(neigh.predict(test_data))):
-				if int(value) == test_label[index]:
-					partition_count += 1
-			#print partition_count
-			total_count += partition_count
-
-		print i, ",", (total_count / (length_of_data*1.0)) * 100
-
+labels = np.array(labels)
+train_data = data[0:17000]
+test_data = data[17000:]
+train_label = labels[0:17000]
+test_label = labels[17000:]
+#train_data = np.reshape(train_data, (17000,100))
+#test_data = np.reshape(test_data,(len(test_data),100))
+for i in range(50,1000,50):
+	clf = KNeighborsClassifier(n_neighbors=i)
+	y_pred = clf.fit(train_data,train_label).predict(test_data)
+	#pickle.dump( y_pred, open( "out	.p", "wb" ) )
+	print y_pred
+	print test_label
+	count = 0
+	for i in range(0,len(y_pred)):
+		if y_pred[i] == test_label[i]:
+			count+=1
+	print (float(count)/len(y_pred))*100

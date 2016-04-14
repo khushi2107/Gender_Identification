@@ -258,7 +258,7 @@ def structural_features(data_string):
 
 def word_based_features(data_string):
 	#the list of features to be returned
-	#currently 32 features
+	#currently 31 features
 	punctuations = ['.',',','?','!',';',':']
 	to_return = []
 	word_len_count = [0]*20
@@ -296,7 +296,10 @@ def word_based_features(data_string):
 			word_len_count[len(i)]+=1
 		except:
 			pass
-	to_return.extend(word_len_count) #20 features
+	req_sum = sum(word_len_count)
+	if req_sum!=0:
+		word_len_count = [float(i)/float(req_sum) for i in word_len_count]
+	to_return.extend(word_len_count[1:]) #19 features
 	return to_return	
 
 ''' Fucntion words extraction '''
@@ -352,11 +355,13 @@ def pos_tag_start(data_string):
 		sen_list1.remove([])
 	for i in sen_list1:
 		try:
-			to_return[POS_dic[i[0]]]+=1
+			to_return[POS_dic[i[0][1]]-1]+=1
 		except KeyError:
 			pass
+	req_sum = sum(to_return)
+	if req_sum!=0:
+		to_return = [float(i)/float(req_sum) for i in to_return]
 	return to_return
-
 
 
 def extract_features(filename):
