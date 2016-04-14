@@ -2,8 +2,8 @@
 A classifier systems for detection of the gender of author for the text written 
 
 #Usage
-A pre computed model is ready for immediate use. There are 2 options (1 for taking the XML file as input and 2 for plain text file). Run the file run.sh for runnning the model directly by the following command:<br>./run.sh path_to_file option
-<br>For the usage of pre computed model, download the classifier pickles from the Dropbox link provided
+A pre computed model is ready for immediate use. There are 2 options (1 for taking the XML file as input and 2 for plain text file). Run the file run.sh for runnning the model directly by the following command:<br><br>**./run.sh path_to_file option**
+<br><br>For the usage of pre computed model, download the classifier pickles from the Dropbox link provided
 
 #Dependencies
 * Python 2.7  
